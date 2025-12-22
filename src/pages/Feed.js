@@ -22,8 +22,8 @@ function Feed() {
         <PostForm />
         <div className="feed-posts">
           {loading && <p>Loading posts...</p>}
-          {posts.length === 0 && !loading && <p>No posts yet. Be the first!</p>}
-          {posts.map((post) => (
+          {Array.isArray(posts) && posts.length === 0 && !loading && <p>No posts yet. Be the first!</p>}
+          {Array.isArray(posts) && posts.map((post) => (
             <PostCard key={post._id} post={post} />
           ))}
         </div>

@@ -50,7 +50,7 @@ export const unlikePost = createAsyncThunk(
 );
 
 const initialState = {
-  posts: [],
+  posts: [], // Array of post objects
   loading: false,
   error: null,
 };
