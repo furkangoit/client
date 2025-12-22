@@ -1,0 +1,35 @@
+.feed-wrapper {
+    margin-left: 280px;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.feed-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #0f1419;
+}
+
+.feed-header {
+    position: sticky;
+    top: 0;
+    background-color: rgba(15, 20, 25, 0.8);
+    padding: 16px;
+    border-bottom: 1px solid #38444d;
+    z-index: 10;
+}
+
+.feed-header h2 {
+    color: #e7e9ea;
+    font-size: 20px;
+}
+
+.feed-posts {
+    background-color: #0f1419;
+}
+
+.feed-posts p {
+    text-align: center;
+    padding: 40px 20px;
+    color: #71767b;
+}
