@@ -1,87 +1,76 @@
-// client/src/store/authSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// API base URL - BURASI KRİTİK!
-const API_URL = 'http://localhost:5001/api';
 
+const API = axios.create({
+  baseURL: 'http://localhost:5000/api',
+});
 
-// Login async thunk
-export const loginUser = createAsyncThunk(
-  'auth/login',
-  async (userData, { rejectWithValue }) => {
+// TOKEN VARSA HEADER'A EKLE
+const token = localStorage.getItem('token');
+if (token) {
+  API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
+
+export const register = createAsyncThunk(
+  'auth/register',
+  async ({ name, email, password }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/auth/login`,
-        userData
-      );
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      return response.data;
+      const { data } = await API.post('/auth/register', { name, email, password });
+      localStorage.setItem('token', data.token);
+      API.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+      return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Giriş başarısız');
+      return rejectWithValue(error.response?.data?.message || 'Error');
     }
   }
 );
 
+export const login = createAsyncThunk(
+  'auth/login',
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      const { data } = await API.post('/auth/login', { email, password });
+      localStorage.setItem('token', data.token);
+      // TOKEN HEADER'A EKLE
+      API.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Error');
+    }
+  }
+);
+
+const initialState = {
+  user: null,
+  token: localStorage.getItem('token') || null,
+  isAuthenticated: !!localStorage.getItem('token'),
+  loading: false,
+  error: null,
+};
+
 const authSlice = createSlice({
   name: 'auth',
-  initialState: {
-    user: JSON.parse(localStorage.getItem('user')) || null,
-    token: localStorage.getItem('token') || null,
-    loading: false,
-    error: null,
-    success: false,
-  },
+  initialState,
   reducers: {
     logout: (state) => {
       state.user = null;
       state.token = null;
+      state.isAuthenticated = false;
       localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    },
-    clearError: (state) => {
-      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Register
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = false;
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.success = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        if (action.payload.token) {
-          localStorage.setItem('token', action.payload.token);
-        }
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = false;
-      })
-      // Login
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+      .addCase(login.fulfilled, (state, action) => {
+  state.user = action.payload.user;
+  state.token = action.payload.token;
+  state.isAuthenticated = true;
+  API.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
+})
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;
+export { API };
