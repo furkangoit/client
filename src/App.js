@@ -1,45 +1,32 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Profile from './components/Profile';
-
-// Basit Home Component
-function Home() {
-  return (
-    <div style={{ textAlign: 'center', padding: '50px' }}>
-      <h1>🏠 Sosyal Medya Uygulaması</h1>
-      <p>Uygulama başarıyla çalışıyor!</p>
-      <div style={{ marginTop: '30px' }}>
-        <a 
-          href="/profile" 
-          style={{
-            display: 'inline-block',
-            padding: '12px 30px',
-            background: '#007bff',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: '8px',
-            fontSize: '18px',
-            fontWeight: 'bold'
-          }}
-        >
-          Profil Sayfasına Git →
-        </a>
-      </div>
-    </div>
-  );
-}
+import React, { useState, useEffect } from 'react';
+import './App.css';
 
 function App() {
+  const [message, setMessage] = useState('');
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    // Backend'den veri çek
+    fetch('/api')
+      .then(res => res.json())
+      .then(data => setMessage(data.message));
+
+    fetch('/api/users')
+      .then(res => res.json())
+      .then(data => setUsers(data));
+  }, []);
+
   return (
-    <Router>
-      <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="*" element={<Home />} />
-        </Routes>
-      </div>
-    </Router>
+    <div className="App">
+      <h1>Frontend (3000) + Backend (5000)</h1>
+      <p>{message}</p>
+      <h2>Kullanıcılar:</h2>
+      <ul>
+        {users.map(user => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
